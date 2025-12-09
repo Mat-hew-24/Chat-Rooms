@@ -6,7 +6,7 @@ import Chatroom from './components/Chatroom'
 export default function Home() {
   return (
     <div className='min-h-screen bg-amber-100 py-8 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-full bg-amber-500 mx-auto'>
+      <div className='max-w-full bg-amber-500 pb-5 mx-auto'>
         <div className='text-center mb-12'>
           <h1 className='text-4xl md:text-6xl font-bold text-gray-900 mb-4'>
             Chat App
@@ -24,6 +24,7 @@ export default function Home() {
           <Chatroombox />
           <Chatroombox />
           <Messagebar />
+          <Chatroom />
         </div>
       </div>
     </div>
