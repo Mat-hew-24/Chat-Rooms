@@ -34,3 +34,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+
+
+# WHAT ALL PACKAGES USED
+
+nodemon (rerun server)
+concurrently (run frontend and backend together)
+socket-io (comms)
+
+## GUIDE (on what I did)
+
+->  Okay so first of all I created a backend folder and split the process
+
+-> I made both backend and frontend run together with a npm package called concurrently (use it in the package.json of root folder)
+
+
