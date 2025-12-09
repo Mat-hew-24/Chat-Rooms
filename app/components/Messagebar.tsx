@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client'
-import { useState } from 'react'
+import { useState, MutableRefObject } from 'react'
 
 const inputstyle: string =
   'flex-1 bg-black text-yellow-100 placeholder-yellow-100 px-4 py-3 rounded-full border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100 focus:border-transparent'
@@ -9,11 +9,16 @@ const btnstyle: string =
 
 const socket = io('http://localhost:5000')
 
-export default function Messagebar() {
+type messageBarProp = {
+  idRef: MutableRefObject<string>
+}
+
+export default function Messagebar({ idRef }: messageBarProp) {
   const [message, setMessage] = useState<string>('')
 
   const sendMessage = () => {
-    socket.emit('send_msg', { message })
+    console.log(socket.id)
+    socket.emit('send_msg', { message, senderid: idRef.current })
     setMessage('')
   }
   return (
@@ -31,10 +36,7 @@ export default function Messagebar() {
             }
           }}
         />
-        <button
-          className={btnstyle}
-          onClick={sendMessage}
-        >
+        <button className={btnstyle} onClick={sendMessage}>
           {/*svg let this be this one is generated okyy*/}
           <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 20 20'>
             <path d='M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z'></path>

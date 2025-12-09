@@ -2,8 +2,11 @@
 import Chatroombox from './components/Chatroombox'
 import Messagebar from './components/Messagebar'
 import Chatroom from './components/Chatroom'
+import { v4 as uuidv4 } from 'uuid'
+import { useRef } from 'react'
 
 export default function Home() {
+  const idRef = useRef<string>(uuidv4())
   return (
     <div className='min-h-screen bg-amber-100 py-8 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-full bg-amber-500 pb-5 mx-auto'>
@@ -23,9 +26,9 @@ export default function Home() {
           <Chatroombox />
           <Chatroombox />
           <Chatroombox />
-          <Messagebar />
-          <Chatroom />
         </div>
+        <Messagebar idRef={idRef} />
+        <Chatroom idRef={idRef} />
       </div>
     </div>
   )
