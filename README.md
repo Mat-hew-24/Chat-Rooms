@@ -35,20 +35,15 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-
-
-
-
 # WHAT ALL PACKAGES USED
 
 nodemon (rerun server)
 concurrently (run frontend and backend together)
 socket-io (comms)
+cors (permission)
 
 ## GUIDE (on what I did)
 
-->  Okay so first of all I created a backend folder and split the process
+-> Okay so first of all I created a backend folder and split the process
 
 -> I made both backend and frontend run together with a npm package called concurrently (use it in the package.json of root folder)
-
-
