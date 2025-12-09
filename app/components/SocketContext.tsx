@@ -52,3 +52,5 @@ export function SocketProvider({ children }: SocketProviderProps) {
 export const useSocket = (): SocketContextType => {
   return useContext(SocketContext)
 }
+
+//basically making a custom useSocket hook
