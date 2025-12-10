@@ -13,13 +13,12 @@ function LeftMessage({
 }) {
   return (
     <div className='flex justify-start mb-4'>
-      <div className='flex flex-col'>
-        <span className='text-xs text-gray-700 mb-1 ml-2 font-semibold'>
+      <div className='bg-gray-300 text-black px-4 py-2 rounded-lg max-w-xs wrap-break-word'>
+        {/*wrap-break-word */}
+        <span className='text-xs text-gray-700 mb-1 font-semibold block'>
           {username}
         </span>
-        <div className='bg-gray-300 text-black px-4 py-2 rounded-lg max-w-xs'>
-          {message}
-        </div>
+        <span className='break-words'>{message}</span>
       </div>
     </div>
   )
@@ -34,13 +33,11 @@ function RightMessage({
 }) {
   return (
     <div className='flex justify-end mb-4'>
-      <div className='flex flex-col items-end'>
-        <span className='text-xs text-gray-700 mb-1 mr-2 font-semibold'>
+      <div className='bg-blue-500 text-white px-4 py-2 rounded-lg max-w-xs wrap-break-word'>
+        <span className='text-xs text-blue-100 mb-1 font-semibold block'>
           {username}
         </span>
-        <div className='bg-blue-500 text-white px-4 py-2 rounded-lg max-w-xs'>
-          {message}
-        </div>
+        <span className='break-word'>{message}</span>
       </div>
     </div>
   )
