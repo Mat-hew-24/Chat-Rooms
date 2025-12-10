@@ -11,11 +11,15 @@ import { io, Socket } from 'socket.io-client'
 interface SocketContextType {
   socket: Socket | null
   isConnected: boolean
+  username: string
+  setUsername: (name: string) => void
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
+  username: '',
+  setUsername: () => {},
 })
 
 interface SocketProviderProps {
@@ -25,6 +29,20 @@ interface SocketProviderProps {
 export function SocketProvider({ children }: SocketProviderProps) {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [username, setUsernameState] = useState('')
+
+  useEffect(() => {
+    // Load username from localStorage on mount
+    const savedUsername = localStorage.getItem('chatUsername')
+    if (savedUsername) {
+      setUsernameState(savedUsername)
+    }
+  }, [])
+
+  const setUsername = (name: string) => {
+    setUsernameState(name)
+    localStorage.setItem('chatUsername', name)
+  }
 
   useEffect(() => {
     const newSocket = io('http://localhost:5000')
@@ -43,7 +61,9 @@ export function SocketProvider({ children }: SocketProviderProps) {
   }, [])
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider
+      value={{ socket, isConnected, username, setUsername }}
+    >
       {children}
     </SocketContext.Provider>
   )

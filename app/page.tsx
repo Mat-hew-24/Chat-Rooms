@@ -3,6 +3,7 @@ import Chatroombox from './components/Chatroombox'
 import Messagebar from './components/Messagebar'
 import Chatroom from './components/Chatroom'
 import Createroom from './components/Createroom'
+import UsernameModal from './components/UsernameModal'
 import { v4 as uuidv4 } from 'uuid'
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useSocket } from './components/SocketContext'
@@ -22,11 +23,12 @@ interface Room {
 }
 
 export default function Home() {
-  const { socket } = useSocket()
+  const { socket, username, setUsername } = useSocket()
   const idRef = useRef<string>(uuidv4())
   const [inRoom, setInRoom] = useState<boolean>(false)
   const [currentRoomId, setCurrentRoomId] = useState<string>('')
   const [rooms, setRooms] = useState<Room[]>([])
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
 
   const messageSentCallbackRef = useRef<((message: string) => void) | null>(
     null
@@ -45,14 +47,26 @@ export default function Home() {
     []
   )
 
+  useEffect(() => {
+    // Show username modal if no username is set
+    if (!username) {
+      setShowUsernameModal(true)
+    }
+  }, [username])
+
+  const handleUsernameSubmit = (newUsername: string) => {
+    setUsername(newUsername)
+    setShowUsernameModal(false)
+  }
+
   const handleCreateRoom = (roomData: {
     roomName: string
-    ownerName: string
     duration: number
   }) => {
     const newRoom: Room = {
       id: uuidv4(),
       ...roomData,
+      ownerName: username, // Use the username from context
       membersCount: 0,
     }
 
@@ -193,76 +207,85 @@ export default function Home() {
     }
   }
 
-  // If in room, show only chatroom interface
+  // If in room, show only chatroom interface (CHAT ROOM INTERFACE)
   if (inRoom) {
     const currentRoom = rooms.find((room) => room.id === currentRoomId)
 
     return (
-      <div className='min-h-screen bg-amber-100 flex flex-col'>
-        {/* Header with room info and exit button */}
-        <div className='bg-black text-white p-4 flex justify-between items-center'>
-          <div>
-            <h2 className='text-2xl font-bold'>
-              {currentRoom?.roomName || 'Chat Room'}
-            </h2>
-            <p className='text-gray-400 text-sm'>by {currentRoom?.ownerName}</p>
+      <>
+        {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
+        <div className='min-h-screen bg-amber-100 flex flex-col'>
+          {/* Header with room info and exit button */}
+          <div className='bg-black text-white p-4 flex justify-between items-center'>
+            <div>
+              <h2 className='text-2xl font-bold'>
+                {currentRoom?.roomName || 'Chat Room'}
+              </h2>
+              <p className='text-gray-400 text-sm'>
+                OWNER : {currentRoom?.ownerName}
+              </p>
+            </div>
+            <button
+              onClick={handleExitRoom}
+              className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200'
+            >
+              EXIT ROOM
+            </button>
           </div>
-          <button
-            onClick={handleExitRoom}
-            className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200'
-          >
-            EXIT ROOM
-          </button>
-        </div>
 
-        {/* Chat area */}
-        <div className='flex-1 flex flex-col'>
-          <Chatroom
-            idRef={idRef}
-            onMessageFromSender={setMessageSentCallback}
-          />
-          <Messagebar
-            idRef={idRef}
-            onMessageSent={handleMessageSent}
-            inRoom={inRoom}
-          />
+          {/* Chat area */}
+          <div className='flex-1 flex flex-col'>
+            <Chatroom
+              idRef={idRef}
+              onMessageFromSender={setMessageSentCallback}
+              username={username}
+            />
+            <Messagebar
+              idRef={idRef}
+              onMessageSent={handleMessageSent}
+              inRoom={inRoom}
+            />
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   // Home view with room list
   return (
-    <div className='min-h-screen bg-amber-100 py-8 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-full bg-amber-500 pb-5 mx-auto'>
-        <div className='text-center mb-12'>
-          <h1 className='text-4xl md:text-6xl font-bold text-gray-900 mb-4'>
-            Chat App
-          </h1>
-          <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
-            Join exciting chat rooms and connect with people around the world
-          </p>
-        </div>
+    <>
+      {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
+      <div className='min-h-screen bg-amber-100 py-8 px-4 sm:px-6 lg:px-8'>
+        <div className='max-w-full bg-amber-500 pb-5 mx-auto'>
+          <div className='text-center mb-12'>
+            <h1 className='text-4xl md:text-6xl font-bold text-gray-900 mb-4'>
+              Chat App
+            </h1>
+            <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
+              Join exciting chat rooms and connect with people around the world
+            </p>
+          </div>
 
-        <div className='flex justify-center mb-8'>
-          <Createroom onCreateRoom={handleCreateRoom} />
-        </div>
+          <div className='flex justify-center mb-8'>
+            <Createroom onCreateRoom={handleCreateRoom} />
+          </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-24'>
-          {rooms.map((room) => (
-            <Chatroombox
-              key={room.id}
-              roomName={room.roomName}
-              ownerName={room.ownerName}
-              membersCount={room.membersCount}
-              duration={room.duration}
-              onJoin={() => handleJoinRoom(room.id)}
-              isOwner={socket?.id === room.ownerId}
-              onDelete={() => handleDeleteRoom(room.id)}
-            />
-          ))}
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-24'>
+            {rooms.map((room) => (
+              <Chatroombox
+                key={room.id}
+                roomName={room.roomName}
+                ownerName={room.ownerName}
+                membersCount={room.membersCount}
+                duration={room.duration}
+                onJoin={() => handleJoinRoom(room.id)}
+                isOwner={socket?.id === room.ownerId}
+                onDelete={() => handleDeleteRoom(room.id)}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

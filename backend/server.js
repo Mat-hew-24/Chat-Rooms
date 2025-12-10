@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
 
   // EMIT ONLY ROOM WISE (IMPORTANT)
   socket.on('send_msg', (data) => {
-    console.log(`Message sent:`, data.message)
+    console.log(`Message sent by ${data.username}:`, data.message)
     // Broadcast to all clients in the room except sender
     if (data.room) {
       socket.to(data.room).emit('recieve_msg', data)

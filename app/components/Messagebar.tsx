@@ -50,7 +50,7 @@ export default function Messagebar({
   onMessageSent,
   inRoom,
 }: MessageBarProps) {
-  const { socket } = useSocket()
+  const { socket, username } = useSocket()
   const [message, setMessage] = useState('')
 
   const sendMessage = () => {
@@ -58,6 +58,7 @@ export default function Messagebar({
       socket.emit('send_msg', {
         message,
         senderid: idRef.current,
+        username,
       })
       onMessageSent(message)
       setMessage('')

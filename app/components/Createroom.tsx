@@ -2,30 +2,23 @@
 import { useState } from 'react'
 
 interface CreateRoomProps {
-  onCreateRoom: (roomData: {
-    roomName: string
-    ownerName: string
-    duration: number
-  }) => void
+  onCreateRoom: (roomData: { roomName: string; duration: number }) => void
 }
 
 export default function Createroom({ onCreateRoom }: CreateRoomProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [roomName, setRoomName] = useState('')
-  const [ownerName, setOwnerName] = useState('')
   const [duration, setDuration] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (roomName.trim() && ownerName.trim() && duration) {
+    if (roomName.trim() && duration) {
       onCreateRoom({
         roomName: roomName.trim(),
-        ownerName: ownerName.trim(),
         duration: parseInt(duration),
       })
       // Reset form
       setRoomName('')
-      setOwnerName('')
       setDuration('')
       setIsOpen(false)
     }
@@ -56,18 +49,6 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
                   onChange={(e) => setRoomName(e.target.value)}
                   className='w-full bg-gray-900 text-yellow-100 px-4 py-2 rounded-lg border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100'
                   placeholder='Enter room name'
-                  required
-                />
-              </div>
-
-              <div>
-                <label className='block text-yellow-100 mb-2'>Owner Name</label>
-                <input
-                  type='text'
-                  value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
-                  className='w-full bg-gray-900 text-yellow-100 px-4 py-2 rounded-lg border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100'
-                  placeholder='Enter your name'
                   required
                 />
               </div>
