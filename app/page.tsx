@@ -11,6 +11,7 @@ import {
   showUserJoinedToast,
   showUserLeftToast,
   showErrorToast,
+  showInfoToast,
 } from './ui/Toast'
 
 interface Room {
@@ -20,6 +21,8 @@ interface Room {
   duration: number
   membersCount: number
   ownerId: string
+  createdAt?: number // Add optional timestamp for room creation
+  expiresAt?: number // Add optional expiry timestamp
 }
 
 export default function Home() {
@@ -30,6 +33,7 @@ export default function Home() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [showUsernameModal, setShowUsernameModal] = useState(false)
   const [enteredUsername, setEnteredUsername] = useState<string>('')
+  const [timeRemaining, setTimeRemaining] = useState<number>(0) // Add timer state
   const messageSentCallbackRef = useRef<((message: string) => void) | null>(
     null
   )
@@ -63,11 +67,12 @@ export default function Home() {
     roomName: string
     duration: number
   }) => {
-    const newRoom: Room = {
+    const newRoom = {
       id: uuidv4(),
       ...roomData,
-      ownerName: username, // Use the username from context
+      ownerName: username,
       membersCount: 0,
+      ownerId: '', // Will be set by server
     }
 
     // Only emit to server - don't update local state
@@ -85,6 +90,39 @@ export default function Home() {
       console.log('Received existing rooms:', existingRooms)
       setRooms(existingRooms)
     })
+
+    socket.on(
+      'room_expired',
+      (data: { roomId: string; roomName: string; message: string }) => {
+        console.log('Room expired:', data)
+
+        if (currentRoomId === data.roomId) {
+          setInRoom(false)
+          setCurrentRoomId('')
+          setTimeRemaining(0) // Reset timer
+          showErrorToast(`⏰ ${data.message}`)
+        }
+
+        setRooms((prevRooms) =>
+          prevRooms.filter((room) => room.id !== data.roomId)
+        )
+      }
+    )
+
+    // Listen for timer updates (optional - to show countdown)
+    socket.on(
+      'timer_update',
+      (data: { roomId: string; timeRemaining: number }) => {
+        // Update timer display for current room
+        if (currentRoomId === data.roomId) {
+          setTimeRemaining(data.timeRemaining)
+
+          if (data.timeRemaining === 60) {
+            showInfoToast('⏱️ 1 minute remaining!')
+          }
+        }
+      }
+    )
 
     // Listen for new room created by any client
     socket.on('room_created', (newRoom: Room) => {
@@ -166,6 +204,42 @@ export default function Home() {
       setRooms(updatedRooms)
     })
 
+    // Listen for forced exit from room (due to disconnect)
+    socket.on('force_exit_room', (data: { roomId: string; reason: string }) => {
+      console.log('Forced exit from room:', data)
+
+      if (currentRoomId === data.roomId) {
+        setInRoom(false)
+        setCurrentRoomId('')
+        showErrorToast(data.reason)
+      }
+    })
+
+    // Listen for socket disconnect
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected')
+
+      // If user was in a room, exit them
+      if (inRoom) {
+        setInRoom(false)
+        setCurrentRoomId('')
+        showErrorToast(
+          'Connection lost. You have been disconnected from the room.'
+        )
+      }
+    })
+
+    // Listen for reconnection
+    socket.on('connect', () => {
+      console.log('Socket reconnected')
+
+      // If user was in a room when disconnected, they should be back on home
+      if (inRoom) {
+        setInRoom(false)
+        setCurrentRoomId('')
+      }
+    })
+
     //------------------------------------------------------------------------------
 
     return () => {
@@ -176,8 +250,13 @@ export default function Home() {
       socket.off('user_left_room')
       socket.off('room_deleted')
       socket.off('rooms_updated')
+      socket.off('force_exit_room')
+      socket.off('disconnect')
+      socket.off('connect')
+      socket.off('room_expired') // timer feature
+      socket.off('timer_update') //timer feature
     }
-  }, [socket, currentRoomId])
+  }, [socket, currentRoomId, inRoom])
 
   const handleJoinRoom = (roomId: string) => {
     const room = rooms.find((r) => r.id === roomId)
@@ -185,9 +264,14 @@ export default function Home() {
     setInRoom(true)
     setCurrentRoomId(roomId)
 
-    // Check if this user is the owner
-    if (socket && room) {
-      //setIsOwner(room.ownerId === socket.id)
+    // Calculate initial time remaining
+    if (room && room.expiresAt) {
+      const now = Date.now()
+      const remaining = Math.max(0, Math.floor((room.expiresAt - now) / 1000))
+      setTimeRemaining(remaining)
+    } else if (room) {
+      // Fallback if expiresAt is not available
+      setTimeRemaining(room.duration * 60)
     }
 
     // Emit join room to update member count
@@ -212,6 +296,7 @@ export default function Home() {
     }
     setInRoom(false)
     setCurrentRoomId('')
+    setTimeRemaining(0) // Reset timer
   }
 
   const handleDeleteRoom = (roomId: string) => {
@@ -223,6 +308,13 @@ export default function Home() {
   // If in room, show only chatroom interface (CHAT ROOM INTERFACE)
   if (inRoom) {
     const currentRoom = rooms.find((room) => room.id === currentRoomId)
+
+    // Format time remaining for display
+    const formatTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60)
+      const secs = seconds % 60
+      return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
 
     return (
       <>
@@ -244,6 +336,21 @@ export default function Home() {
                 OWNER : {currentRoom?.ownerName}
               </p>
             </div>
+
+            {/* Timer Display */}
+            <div className='flex flex-col items-center'>
+              <div
+                className={`text-3xl font-mono font-bold ${
+                  timeRemaining <= 60
+                    ? 'text-red-400 animate-pulse'
+                    : 'text-yellow-400'
+                }`}
+              >
+                {formatTime(timeRemaining)}
+              </div>
+              <p className='text-xs text-gray-400 mt-1'>Time Remaining</p>
+            </div>
+
             <button
               onClick={handleExitRoom}
               className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200'
