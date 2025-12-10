@@ -24,18 +24,22 @@ export default function Chatroom({
   )
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  //SMOOTH SCROLL DOWN(instead of scrolltop = scrollheight)
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+  //
 
   useEffect(() => {
     if (!socket) return
 
+    //for others
     const handleReceiveMessage = (data: MessageData) => {
       console.log('Received message from:', data.senderid)
       setMessages((prev) => [...prev, { who: 'others', message: data.message }])
     }
 
+    //for the sender
     const handleSentMessage = (message: string) => {
       setMessages((prev) => [...prev, { who: 'user', message }])
     }
