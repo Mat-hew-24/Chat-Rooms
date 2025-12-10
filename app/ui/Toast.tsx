@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast'
 
-// Custom toast styles
+// Custom toast styles (better use normal css so you can use ...)
 const customToastStyle = {
   style: {
     background: '#1a1a1a',
@@ -13,7 +13,6 @@ const customToastStyle = {
   },
 }
 
-// Custom success toast
 export const showSuccessToast = (message: string) => {
   toast.success(message, {
     ...customToastStyle,
@@ -22,16 +21,19 @@ export const showSuccessToast = (message: string) => {
   })
 }
 
-// Custom error toast
 export const showErrorToast = (message: string) => {
   toast.error(message, {
     ...customToastStyle,
+    style: {
+      ...customToastStyle.style,
+      border: '2px solid #ef4444',
+    },
     icon: '❌',
-    duration: 3000,
+    duration: 5000,
   })
 }
 
-// Custom user joined toast
+// entry toast
 export const showUserJoinedToast = (username: string) => {
   toast(
     (t) => (
@@ -55,7 +57,7 @@ export const showUserJoinedToast = (username: string) => {
   )
 }
 
-// Custom user left toast
+// exit toast
 export const showUserLeftToast = (username: string) => {
   toast(
     (t) => (

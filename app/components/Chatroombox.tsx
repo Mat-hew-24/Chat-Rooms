@@ -4,6 +4,8 @@ interface ChatroomboxProps {
   membersCount: number
   duration: number
   onJoin: () => void
+  isOwner?: boolean
+  onDelete?: () => void
 }
 
 export default function Chatroombox({
@@ -12,6 +14,8 @@ export default function Chatroombox({
   membersCount,
   duration,
   onJoin,
+  isOwner = false,
+  onDelete,
 }: ChatroomboxProps) {
   // convert the minutes into hours + minutes
   const formatDuration = (minutes: number) => {
@@ -32,12 +36,25 @@ export default function Chatroombox({
           </p>
         </div>
 
-        <button
-          onClick={onJoin}
-          className='w-full bg-white text-black font-semibold py-4 px-6 rounded-xl hover:bg-gray-200 transition-colors duration-200 active:scale-95 transform text-lg'
-        >
-          JOIN ROOM
-        </button>
+        <div className='flex gap-3'>
+          <button
+            onClick={onJoin}
+            className='flex-1 bg-white text-black font-semibold py-4 px-6 rounded-xl hover:bg-gray-200 transition-colors duration-200 active:scale-95 transform text-lg'
+          >
+            JOIN ROOM
+          </button>
+          {isOwner && onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+              className='bg-red-500 text-white font-semibold py-4 px-6 rounded-xl hover:bg-red-600 transition-colors duration-200 active:scale-95 transform text-lg'
+            >
+              DELETE
+            </button>
+          )}
+        </div>
 
         <div className='bg-gray-800 rounded-lg p-4 text-center'>
           <p className='text-white text-base font-medium'>TIME REMAINING</p>

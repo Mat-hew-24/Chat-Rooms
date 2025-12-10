@@ -6,7 +6,11 @@ import Createroom from './components/Createroom'
 import { v4 as uuidv4 } from 'uuid'
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useSocket } from './components/SocketContext'
-import { showUserJoinedToast, showUserLeftToast } from './ui/Toast'
+import {
+  showUserJoinedToast,
+  showUserLeftToast,
+  showErrorToast,
+} from './ui/Toast'
 
 interface Room {
   id: string
@@ -14,6 +18,7 @@ interface Room {
   ownerName: string
   duration: number
   membersCount: number
+  ownerId: string
 }
 
 export default function Home() {
@@ -113,6 +118,32 @@ export default function Home() {
       }
     )
 
+    // Listen for room deletion
+    socket.on(
+      'room_deleted',
+      (data: { roomId: string; roomName: string; reason: string }) => {
+        console.log('Room deleted:', data)
+
+        // If user is in the deleted room, exit them
+        if (currentRoomId === data.roomId) {
+          setInRoom(false)
+          setCurrentRoomId('')
+          showErrorToast(`Room "${data.roomName}" was deleted: ${data.reason}`)
+        }
+
+        // Remove the room from the list
+        setRooms((prevRooms) =>
+          prevRooms.filter((room) => room.id !== data.roomId)
+        )
+      }
+    )
+
+    // Listen for complete room list updates
+    socket.on('rooms_updated', (updatedRooms: Room[]) => {
+      console.log('Rooms list updated:', updatedRooms)
+      setRooms(updatedRooms)
+    })
+
     //------------------------------------------------------------------------------
 
     return () => {
@@ -121,12 +152,21 @@ export default function Home() {
       socket.off('room_updated')
       socket.off('user_joined_room')
       socket.off('user_left_room')
+      socket.off('room_deleted')
+      socket.off('rooms_updated')
     }
-  }, [socket])
+  }, [socket, currentRoomId])
 
   const handleJoinRoom = (roomId: string) => {
+    const room = rooms.find((r) => r.id === roomId)
+
     setInRoom(true)
     setCurrentRoomId(roomId)
+
+    // Check if this user is the owner
+    if (socket && room) {
+      //setIsOwner(room.ownerId === socket.id)
+    }
 
     // Emit join room to update member count
     if (socket) {
@@ -145,6 +185,12 @@ export default function Home() {
     }
     setInRoom(false)
     setCurrentRoomId('')
+  }
+
+  const handleDeleteRoom = (roomId: string) => {
+    if (socket) {
+      socket.emit('delete_room', { roomId })
+    }
   }
 
   // If in room, show only chatroom interface
@@ -211,6 +257,8 @@ export default function Home() {
               membersCount={room.membersCount}
               duration={room.duration}
               onJoin={() => handleJoinRoom(room.id)}
+              isOwner={socket?.id === room.ownerId}
+              onDelete={() => handleDeleteRoom(room.id)}
             />
           ))}
         </div>
