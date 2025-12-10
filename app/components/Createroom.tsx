@@ -28,7 +28,7 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className='bg-yellow-100 hover:bg-yellow-500 text-black font-bold py-3 px-8 rounded-full transition-colors duration-200'
+        className='bg-black hover:bg-black/80 cursor-pointer text-[#ffffcc] font-bold py-3 px-8 rounded-full transition-colors duration-200'
       >
         CREATE ROOM
       </button>

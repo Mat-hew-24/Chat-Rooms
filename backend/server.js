@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
   })
 
   // Join a chatroom (for messaging)
-  socket.on('join_chatroom', ({ roomId, userId }) => {
+  socket.on('join_chatroom', ({ roomId, userId, username }) => {
     const room = rooms.find((r) => r.id === roomId)
     if (room) {
       // Track this user's socket
@@ -64,14 +64,15 @@ io.on('connection', (socket) => {
       // Notify everyone in the room about the new member
       io.to(roomId).emit('user_joined_room', {
         userId,
+        username: username || userId.slice(0, 8),
         roomName: room.roomName,
-        message: `User ${userId.slice(0, 8)}... joined the room`,
+        message: `${username || 'User'} joined the room`,
       })
     }
   })
 
   // Leave a chatroom (LEAVING MEANS YOU CHANGE THE CHATROOMBOX DATA)
-  socket.on('leave_chatroom', ({ roomId, userId }) => {
+  socket.on('leave_chatroom', ({ roomId, userId, username }) => {
     const room = rooms.find((r) => r.id === roomId)
     if (room && room.membersCount > 0) {
       room.membersCount--
@@ -80,8 +81,9 @@ io.on('connection', (socket) => {
       // Notify everyone in the room before leaving
       io.to(roomId).emit('user_left_room', {
         userId,
+        username: username || userId.slice(0, 8),
         roomName: room.roomName,
-        message: `User ${userId.slice(0, 8)}... left the room`,
+        message: `${username || 'User'} left the room`,
       })
 
       socket.leave(roomId)

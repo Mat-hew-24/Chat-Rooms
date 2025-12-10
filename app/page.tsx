@@ -112,10 +112,15 @@ export default function Home() {
     // BROADCAST THE TOAST(EXCEPT TO THE SENDER)
     socket.on(
       'user_joined_room',
-      (data: { userId: string; roomName: string; message: string }) => {
+      (data: {
+        userId: string
+        roomName: string
+        message: string
+        username: string
+      }) => {
         // Don't show toast for your own join
         if (data.userId !== idRef.current) {
-          showUserJoinedToast(enteredUsername)
+          showUserJoinedToast(data.username)
         }
       }
     )
@@ -123,9 +128,14 @@ export default function Home() {
     // Listen for user left room notification
     socket.on(
       'user_left_room',
-      (data: { userId: string; roomName: string; message: string }) => {
+      (data: {
+        userId: string
+        roomName: string
+        message: string
+        username: string
+      }) => {
         if (data.userId !== idRef.current) {
-          showUserLeftToast(enteredUsername)
+          showUserLeftToast(data.username)
         }
       }
     )
@@ -182,7 +192,11 @@ export default function Home() {
 
     // Emit join room to update member count
     if (socket) {
-      socket.emit('join_chatroom', { roomId, userId: idRef.current })
+      socket.emit('join_chatroom', {
+        roomId,
+        userId: idRef.current,
+        username: username,
+      })
     }
 
     console.log('Joined room:', roomId)
@@ -193,6 +207,7 @@ export default function Home() {
       socket.emit('leave_chatroom', {
         roomId: currentRoomId,
         userId: idRef.current,
+        username: username,
       })
     }
     setInRoom(false)
@@ -267,7 +282,7 @@ export default function Home() {
         />
       )}
       <div className='min-h-screen bg-amber-100 py-8 px-4 sm:px-6 lg:px-8'>
-        <div className='max-w-full bg-amber-500 pb-5 mx-auto'>
+        <div className='max-w-full pb-5 mx-auto'>
           <div className='text-center mb-12'>
             <h1 className='text-4xl md:text-6xl font-bold text-gray-900 mb-4'>
               Chat App
