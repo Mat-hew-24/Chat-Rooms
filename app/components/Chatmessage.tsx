@@ -18,7 +18,7 @@ function LeftMessage({
         <span className='text-xs text-gray-700 mb-1 font-semibold block'>
           {username}
         </span>
-        <span className='break-words'>{message}</span>
+        <span className='wrap-break-word'>{message}</span>
       </div>
     </div>
   )
@@ -37,7 +37,7 @@ function RightMessage({
         <span className='text-xs text-blue-100 mb-1 font-semibold block'>
           {username}
         </span>
-        <span className='break-word'>{message}</span>
+        <span className='wrap-break-word'>{message}</span>
       </div>
     </div>
   )

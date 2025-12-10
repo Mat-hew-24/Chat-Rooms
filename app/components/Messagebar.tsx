@@ -43,12 +43,14 @@ interface MessageBarProps {
   idRef: MutableRefObject<string>
   onMessageSent: (message: string) => void
   inRoom: boolean
+  roomId?: string
 }
 
 export default function Messagebar({
   idRef,
   onMessageSent,
   inRoom,
+  roomId,
 }: MessageBarProps) {
   const { socket, username } = useSocket()
   const [message, setMessage] = useState('')
@@ -59,6 +61,7 @@ export default function Messagebar({
         message,
         senderid: idRef.current,
         username,
+        room: roomId, // Include the room ID
       })
       onMessageSent(message)
       setMessage('')

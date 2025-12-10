@@ -248,6 +248,7 @@ export default function Home() {
               idRef={idRef}
               onMessageSent={handleMessageSent}
               inRoom={inRoom}
+              roomId={currentRoomId}
             />
           </div>
         </div>
