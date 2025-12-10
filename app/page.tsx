@@ -29,7 +29,7 @@ export default function Home() {
   const [currentRoomId, setCurrentRoomId] = useState<string>('')
   const [rooms, setRooms] = useState<Room[]>([])
   const [showUsernameModal, setShowUsernameModal] = useState(false)
-
+  const [enteredUsername, setEnteredUsername] = useState<string>('')
   const messageSentCallbackRef = useRef<((message: string) => void) | null>(
     null
   )
@@ -115,8 +115,7 @@ export default function Home() {
       (data: { userId: string; roomName: string; message: string }) => {
         // Don't show toast for your own join
         if (data.userId !== idRef.current) {
-          const username = data.userId.slice(0, 8)
-          showUserJoinedToast(username)
+          showUserJoinedToast(enteredUsername)
         }
       }
     )
@@ -126,8 +125,7 @@ export default function Home() {
       'user_left_room',
       (data: { userId: string; roomName: string; message: string }) => {
         if (data.userId !== idRef.current) {
-          const username = data.userId.slice(0, 8)
-          showUserLeftToast(username)
+          showUserLeftToast(enteredUsername)
         }
       }
     )
@@ -213,9 +211,15 @@ export default function Home() {
 
     return (
       <>
-        {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
+        {showUsernameModal && (
+          <UsernameModal
+            onSubmit={handleUsernameSubmit}
+            enteredUsername={enteredUsername}
+            setEnteredUsername={setEnteredUsername}
+          />
+        )}
         <div className='min-h-screen bg-amber-100 flex flex-col'>
-          {/* Header with room info and exit button */}
+          {/* top bar inside of a room */}
           <div className='bg-black text-white p-4 flex justify-between items-center'>
             <div>
               <h2 className='text-2xl font-bold'>
@@ -254,7 +258,13 @@ export default function Home() {
   // Home view with room list
   return (
     <>
-      {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
+      {showUsernameModal && (
+        <UsernameModal
+          onSubmit={handleUsernameSubmit}
+          enteredUsername={enteredUsername}
+          setEnteredUsername={setEnteredUsername}
+        />
+      )}
       <div className='min-h-screen bg-amber-100 py-8 px-4 sm:px-6 lg:px-8'>
         <div className='max-w-full bg-amber-500 pb-5 mx-auto'>
           <div className='text-center mb-12'>
