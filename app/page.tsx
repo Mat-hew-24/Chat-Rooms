@@ -100,7 +100,7 @@ export default function Home() {
           setInRoom(false)
           setCurrentRoomId('')
           setTimeRemaining(0) // Reset timer
-          showErrorToast(`⏰ ${data.message}`)
+          showErrorToast(`${data.message}`)
         }
 
         setRooms((prevRooms) =>
@@ -118,7 +118,7 @@ export default function Home() {
           setTimeRemaining(data.timeRemaining)
 
           if (data.timeRemaining === 60) {
-            showInfoToast('⏱️ 1 minute remaining!')
+            showInfoToast('1 minute remaining!')
           }
         }
       }

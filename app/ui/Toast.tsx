@@ -28,7 +28,6 @@ export const showErrorToast = (message: string) => {
       ...customToastStyle.style,
       border: '2px solid #ef4444',
     },
-    icon: '❌',
     duration: 5000,
   })
 }
@@ -85,7 +84,6 @@ export const showUserLeftToast = (username: string) => {
 export const showInfoToast = (message: string) => {
   toast(message, {
     ...customToastStyle,
-    icon: 'ℹ️',
     duration: 3000,
   })
 }
