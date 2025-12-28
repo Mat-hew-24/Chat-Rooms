@@ -45,7 +45,9 @@ export function SocketProvider({ children }: SocketProviderProps) {
   }
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000')
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+    const newSocket = io(backendUrl)
     newSocket.on('connect', () => {
       setIsConnected(true)
       console.log('Socket connected:', newSocket.id)
