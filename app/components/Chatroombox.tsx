@@ -17,11 +17,14 @@ export default function Chatroombox({
   isOwner = false,
   onDelete,
 }: ChatroomboxProps) {
-  // convert the minutes into hours + minutes
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+  const getExpiryTime = (minutes: number) => {
+    const now = new Date()
+    const expiryTime = new Date(now.getTime() + minutes * 60 * 1000)
+    return expiryTime.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
   }
 
   return (
@@ -57,9 +60,9 @@ export default function Chatroombox({
         </div>
 
         <div className='bg-gray-800 rounded-lg p-4 text-center'>
-          <p className='text-white text-base font-medium'>TIME REMAINING</p>
+          <p className='text-white text-base font-medium'>EXPIRES AT</p>
           <p className='text-gray-300 text-sm mt-1'>
-            {formatDuration(duration)}
+            {getExpiryTime(duration)}
           </p>
         </div>
       </div>

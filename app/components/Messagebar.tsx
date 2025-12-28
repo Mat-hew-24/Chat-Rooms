@@ -60,6 +60,7 @@ export default function Messagebar({
     if (message.trim() && socket) {
       // Encrypt the message before sending to server
       const encryptedMessage = encryptMessage(message)
+      console.log(encryptMessage)
 
       socket.emit('send_msg', {
         message: encryptedMessage, // Send encrypted message
