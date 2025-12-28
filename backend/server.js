@@ -63,6 +63,21 @@ io.on('connection', (socket) => {
   })
 
   socket.on('create_room', (newRoom) => {
+    // Guard: Validate duration is under 24 hours (1440 minutes)
+    if (newRoom.duration > 1440) {
+      socket.emit('room_creation_error', {
+        message: 'Duration must be under 24 hours (1440 minutes)',
+      })
+      return
+    }
+
+    if (newRoom.duration < 1) {
+      socket.emit('room_creation_error', {
+        message: 'Duration must be at least 1 minute',
+      })
+      return
+    }
+
     const roomWithOwner = {
       ...newRoom,
       ownerId: socket.id,
@@ -200,13 +215,11 @@ io.on('connection', (socket) => {
       const room = rooms.find((r) => r.id === roomId)
       if (room && room.membersCount > 0) {
         room.membersCount--
-        socket
-          .to(room.id)
-          .emit('user_left_room', {
-            userId: socket.id,
-            username: disconnectedUsername,
-            roomName: room.roomName,
-          })
+        socket.to(room.id).emit('user_left_room', {
+          userId: socket.id,
+          username: disconnectedUsername,
+          roomName: room.roomName,
+        })
         io.emit('room_updated', room)
       }
     })

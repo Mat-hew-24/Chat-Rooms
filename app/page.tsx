@@ -127,6 +127,10 @@ export default function Home() {
       })
     })
 
+    socket.on('room_creation_error', (data) => {
+      showErrorToast(data.message)
+    })
+
     socket.on('room_updated', (updatedRoom: Room) => {
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
@@ -184,6 +188,7 @@ export default function Home() {
     return () => {
       socket.off('existing_rooms')
       socket.off('room_created')
+      socket.off('room_creation_error')
       socket.off('room_updated')
       socket.off('user_joined_room')
       socket.off('user_left_room')

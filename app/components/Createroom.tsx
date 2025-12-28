@@ -9,13 +9,29 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [roomName, setRoomName] = useState('')
   const [duration, setDuration] = useState('')
+  const [error, setError] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setError('') // Clear previous errors
+
     if (roomName.trim() && duration) {
+      const durationValue = parseInt(duration)
+
+      // Guard: Check if duration is under 24 hours (1440 minutes)
+      if (durationValue > 1440) {
+        setError('Duration must be under 24 hours (1440 minutes)')
+        return
+      }
+
+      if (durationValue < 1) {
+        setError('Duration must be at least 1 minute')
+        return
+      }
+
       onCreateRoom({
         roomName: roomName.trim(),
-        duration: parseInt(duration),
+        duration: durationValue,
       })
       // Reset form
       setRoomName('')
@@ -55,18 +71,25 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
 
               <div>
                 <label className='block text-yellow-100 mb-2'>
-                  Duration (minutes)
+                  Duration (minutes) - Max 24 hours (1440 min)
                 </label>
                 <input
                   type='number'
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   className='w-full bg-gray-900 text-yellow-100 px-4 py-2 rounded-lg border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100'
-                  placeholder='Enter duration'
+                  placeholder='Enter duration (max 1440 minutes)'
                   min='1'
+                  max='1440'
                   required
                 />
               </div>
+
+              {error && (
+                <div className='text-red-400 text-sm mt-2 p-2 bg-red-900/20 rounded-lg border border-red-400'>
+                  {error}
+                </div>
+              )}
 
               <div className='flex gap-3 mt-6'>
                 <button
