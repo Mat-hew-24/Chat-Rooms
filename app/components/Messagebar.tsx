@@ -1,6 +1,7 @@
 'use client'
 import { useState, MutableRefObject } from 'react'
 import { useSocket } from './SocketContext'
+import { encryptMessage } from '../utils/encryption'
 
 const inputstyle =
   'flex-1 bg-black text-yellow-100 placeholder-yellow-100 px-4 py-3 rounded-full border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100 focus:border-transparent'
@@ -57,12 +58,16 @@ export default function Messagebar({
 
   const sendMessage = () => {
     if (message.trim() && socket) {
+      // Encrypt the message before sending to server
+      const encryptedMessage = encryptMessage(message)
+
       socket.emit('send_msg', {
-        message,
+        message: encryptedMessage, // Send encrypted message
         senderid: idRef.current,
         username,
         room: roomId, // Include the room ID
       })
+      // Pass the original unencrypted message to UI
       onMessageSent(message)
       setMessage('')
     }

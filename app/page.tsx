@@ -309,11 +309,27 @@ export default function Home() {
   if (inRoom) {
     const currentRoom = rooms.find((room) => room.id === currentRoomId)
 
-    // Format time remaining for display
-    const formatTime = (seconds: number) => {
-      const mins = Math.floor(seconds / 60)
+    // Format time remaining for display (CHANGE REQ)
+    const formatTime = (seconds: number): string => {
+      const hours = Math.floor(seconds / 3600)
+      const mins = Math.floor((seconds % 3600) / 60)
       const secs = seconds % 60
+      if (hours > 0) {
+        return `${hours}:${mins.toString().padStart(2, '0')}:${secs
+          .toString()
+          .padStart(2, '0')}`
+      }
       return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
+    //TIMER COLOR
+    const timerColor = (time: number): string => {
+      if (time <= 60) {
+        return 'text-red-500 animate-pulse'
+      } else if (time <= 300) {
+        return 'text-yellow-400'
+      }
+      return 'text-green-400'
     }
 
     return (
@@ -340,11 +356,9 @@ export default function Home() {
             {/* Timer Display */}
             <div className='flex flex-col items-center'>
               <div
-                className={`text-3xl font-mono font-bold ${
-                  timeRemaining <= 60
-                    ? 'text-red-400 animate-pulse'
-                    : 'text-yellow-400'
-                }`}
+                className={`text-3xl font-mono font-bold ${timerColor(
+                  timeRemaining
+                )}`}
               >
                 {formatTime(timeRemaining)}
               </div>

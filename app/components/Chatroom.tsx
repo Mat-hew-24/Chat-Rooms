@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, MutableRefObject } from 'react'
 import Chatmessage from './Chatmessage'
 import { useSocket } from './SocketContext'
+import { decryptMessage } from '../utils/encryption'
 
 interface MessageData {
   message: string
@@ -37,10 +38,14 @@ export default function Chatroom({
     if (!socket) return
 
     const handleReceiveMessage = (data: MessageData) => {
-      console.log('Received message from:', data.username)
+      console.log('Received encrypted message from:', data.username)
+      // Decrypt the message before displaying
+      const decryptedMessage = decryptMessage(data.message)
+      console.log('Decrypted message:', decryptedMessage)
+
       setMessages((prev) => [
         ...prev,
-        { who: 'others', message: data.message, username: data.username },
+        { who: 'others', message: decryptedMessage, username: data.username },
       ])
     }
 
