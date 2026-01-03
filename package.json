@@ -27,8 +27,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^8.2.2",
+    "docx": "^9.5.1",
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
+    "mammoth": "^1.11.0",
+    "markdown-to-docx": "^1.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
