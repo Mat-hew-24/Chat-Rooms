@@ -261,9 +261,9 @@ export default function Home() {
 
     return (
       <div className='min-h-screen bg-amber-100 flex flex-col'>
-        <div className='bg-black text-white p-4 flex justify-between items-center'>
-          <div>
-            <h2 className='text-2xl font-bold'>
+        <div className='bg-black text-white p-4 mb-10 flex justify-between items-center'>
+          <div className='scale-90 sm:scale-100'>
+            <h2 className='text-2xl sticky z-10 font-bold'>
               {currentRoom?.roomName || 'Chat Room'}
             </h2>
             <p className='text-gray-400 text-sm'>
@@ -272,7 +272,7 @@ export default function Home() {
           </div>
           <div className='flex flex-col items-center'>
             <div
-              className={`text-3xl font-mono font-bold ${
+              className={`text-3xl scale-90 sm:scale-100 font-mono font-bold ${
                 timeRemaining <= 60
                   ? 'text-red-500 animate-pulse'
                   : 'text-green-400'
@@ -283,12 +283,12 @@ export default function Home() {
           </div>
           <button
             onClick={handleExitRoom}
-            className='bg-red-500 py-2 px-6 rounded-full'
+            className='bg-red-700 scale-90 sm:scale-100 cursor-pointer py-2 px-6 rounded-full'
           >
-            EXIT ROOM
+            EXIT
           </button>
         </div>
-        <div className='flex-1 flex flex-col'>
+        <div className='flex-1  flex flex-col'>
           <Chatroom
             idRef={idRef}
             onMessageFromSender={setMessageSentCallback}
