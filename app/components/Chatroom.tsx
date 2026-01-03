@@ -62,7 +62,7 @@ export default function Chatroom({
   }, [socket, onMessageFromSender, username])
 
   return (
-    <div className='flex flex-col w-full space-y-2 p-4 min-h-200 max-h-96 overflow-y-auto'>
+    <div className='flex flex-col w-full space-y-2 p-3 md:p-4 flex-1 chat-scroll'>
       {messages.map((msg, index) => (
         <Chatmessage
           key={index}

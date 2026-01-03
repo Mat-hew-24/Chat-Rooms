@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "cbb28557-9cbb-4485-9ac7-f0834de2334b",
+    "roomName": "22",
+    "duration": 22,
+    "ownerName": "22",
+    "membersCount": 1,
+    "ownerId": "1d4-2eeZmH1rI1WpAAAR",
+    "createdAt": 1767442132452,
+    "expiresAt": 1767443452452
+  }
+]

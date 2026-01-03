@@ -4,10 +4,10 @@ import { useSocket } from './SocketContext'
 import { encryptMessage } from '../utils/encryption'
 
 const inputstyle =
-  'flex-1 bg-black text-yellow-100 placeholder-yellow-100 px-4 py-3 rounded-full border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100 focus:border-transparent'
+  'flex-1 bg-black text-yellow-100 placeholder-yellow-100 px-3 py-2 md:px-4 md:py-3 rounded-full border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100 focus:border-transparent text-sm md:text-base'
 
 const btnstyle =
-  'bg-yellow-100 hover:bg-yellow-500 text-black p-3 rounded-full transition-colors duration-200 flex items-center justify-center min-w-12 h-12 cursor-pointer'
+  'bg-yellow-100 hover:bg-yellow-200 text-black p-2 md:p-3 rounded-full transition-colors duration-200 border-3 border-black flex items-center justify-center min-w-10 h-10 md:min-w-12 md:h-12 cursor-pointer'
 
 //  Moved the subcomponent outside to remove rerender issues (always use props)
 function MessagebarHTML({
@@ -20,8 +20,8 @@ function MessagebarHTML({
   sendMessage: () => void
 }) {
   return (
-    <div className='fixed  bottom-0 left-0 right-0 p-4'>
-      <div className='max-w-4xl mx-auto flex gap-3 items-center'>
+    <div className='message-input-container bg-yellow-100'>
+      <div className='max-w-4xl mx-auto flex gap-2 md:gap-3 items-center'>
         <input
           type='text'
           placeholder='Type your message...'
@@ -32,7 +32,7 @@ function MessagebarHTML({
         />
         <button className={btnstyle} onClick={sendMessage}>
           <svg
-            className='w-5 h-5 rotate-90'
+            className='w-4 h-4 md:w-5 md:h-5 rotate-90'
             fill='currentColor'
             viewBox='0 0 20 20'
           >

@@ -51,27 +51,21 @@ export default function Home() {
     []
   )
 
-  // 1. Initial Modal Logic
   useEffect(() => {
     if (!username) {
       setShowUsernameModal(true)
     }
   }, [username])
 
-  // 2. NEW: RECOVERY EFFECT (For browser refreshes)
-  // If username exists but we just connected, tell the server to send rooms
   useEffect(() => {
     if (username && socket) {
       socket.emit('register_user', { username })
     }
   }, [socket, username])
 
-  // 3. UPDATED: Handle name submission
   const handleUsernameSubmit = (newUsername: string) => {
     setUsername(newUsername)
     setShowUsernameModal(false)
-
-    // Tell server who we are so it triggers 'existing_rooms'
     if (socket) {
       socket.emit('register_user', { username: newUsername })
     }
@@ -97,7 +91,6 @@ export default function Home() {
     if (!socket) return
 
     socket.on('existing_rooms', (existingRooms: Room[]) => {
-      console.log('Received existing rooms:', existingRooms)
       setRooms(existingRooms)
     })
 
@@ -247,13 +240,11 @@ export default function Home() {
       const hours = Math.floor(totalSeconds / 3600)
       const minutes = Math.floor((totalSeconds % 3600) / 60)
       const seconds = totalSeconds % 60
-
       if (hours > 0) {
         return `${hours.toString().padStart(2, '0')}:${minutes
           .toString()
           .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
       }
-
       return `${minutes.toString().padStart(2, '0')}:${seconds
         .toString()
         .padStart(2, '0')}`
@@ -261,46 +252,58 @@ export default function Home() {
 
     return (
       <div className='min-h-screen bg-amber-100 flex flex-col'>
-        <div className='bg-black text-white p-4 mb-10 flex justify-between items-center'>
-          <div className='scale-90 sm:scale-100'>
-            <h2 className='text-2xl sticky z-10 font-bold'>
-              {currentRoom?.roomName || 'Chat Room'}
-            </h2>
-            <p className='text-gray-400 text-sm'>
-              OWNER: {currentRoom?.ownerName}
-            </p>
-          </div>
-          <div className='flex flex-col items-center'>
-            <div
-              className={`text-3xl scale-90 sm:scale-100 font-mono font-bold ${
-                timeRemaining <= 60
-                  ? 'text-red-500 animate-pulse'
-                  : 'text-green-400'
-              }`}
-            >
-              {formatTime(timeRemaining)}
+        <header className='timer-bar'>
+          <div className='w-full max-w-7xl mx-auto flex items-center justify-between'>
+            <div className='flex-1 min-w-0'>
+              <h2 className='text-2xl md:text-3xl font-bold truncate leading-tight'>
+                {currentRoom?.roomName || 'Chat Room'}
+              </h2>
+              <p className='text-[16px] md:text-xl text-gray-400 uppercase tracking-tighter truncate'>
+                {currentRoom?.ownerName}
+              </p>
+            </div>
+
+            <div className='flex-none px-2'>
+              <div
+                className={`text-3xl font-mono font-black tabular-nums tracking-tight ${
+                  timeRemaining <= 60
+                    ? 'text-red-500 animate-pulse'
+                    : 'text-green-400'
+                }`}
+              >
+                {formatTime(timeRemaining)}
+              </div>
+            </div>
+
+            <div className='flex-1 flex justify-end'>
+              <button
+                onClick={handleExitRoom}
+                className='bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black py-1.5 px-4 rounded text-[16px] md:text-xl transition-all uppercase cursor-pointer'
+              >
+                Exit
+              </button>
             </div>
           </div>
-          <button
-            onClick={handleExitRoom}
-            className='bg-red-700 scale-90 sm:scale-100 cursor-pointer py-2 px-6 rounded-full'
-          >
-            EXIT
-          </button>
-        </div>
-        <div className='flex-1  flex flex-col'>
+        </header>
+
+        <main className='chat-container flex-grow'>
           <Chatroom
             idRef={idRef}
             onMessageFromSender={setMessageSentCallback}
             username={username}
           />
-          <Messagebar
-            idRef={idRef}
-            onMessageSent={handleMessageSent}
-            inRoom={inRoom}
-            roomId={currentRoomId}
-          />
-        </div>
+        </main>
+
+        <footer className='fixed-message-bar'>
+          <div className='max-w-7xl mx-auto w-full'>
+            <Messagebar
+              idRef={idRef}
+              onMessageSent={handleMessageSent}
+              inRoom={inRoom}
+              roomId={currentRoomId}
+            />
+          </div>
+        </footer>
       </div>
     )
   }

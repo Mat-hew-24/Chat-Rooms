@@ -1,2 +1,77 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* Top Bar */
+.timer-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: #000000;
+  color: white;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-top: 0.5rem; /* add vertical padding */
+  padding-bottom: 0.5rem; /* add vertical padding */
+  border-bottom: 1px solid #222;
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+/* Bottom Bar - Always Visible */
+.fixed-message-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: #fef3c7; /* Match your bg-amber-100 or make it white/black */
+  padding: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Middle Content */
+.chat-container {
+  /* top padding = timer bar height + vertical padding (0.5rem * 2 = 16px) */
+  padding-top: 80px;
+  /* bottom padding = message bar height (approx 80px-100px) */
+  padding-bottom: 100px;
+  min-height: 100vh;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .timer-bar {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem; /* add vertical padding */
+    padding-bottom: 0.5rem; /* add vertical padding */
+    height: 54px;
+  }
+
+  .chat-container {
+    /* 54px + vertical padding (16px) */
+    padding-top: 70px;
+    padding-bottom: 90px;
+  }
+
+  .fixed-message-bar {
+    padding: 0.5rem;
+  }
+}
+
+/* Prevent body bounce/scroll issues on mobile */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
