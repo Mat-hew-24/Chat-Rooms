@@ -6,37 +6,22 @@ const cors = require('cors')
 const fs = require('fs')
 const path = require('path')
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://chat-rooms-gilt.vercel.app',
-  'https://chat-rooms-git-main-mat-hew-24s-projects.vercel.app',
-  'https://chat-rooms-oizde52bl-mat-hew-24s-projects.vercel.app',
-]
+// --- CORS (simple, project-style) ---
+app.use(cors())
 
-//  ---CORS---
-app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: false,
-  }),
-)
-app.options('*', cors())
-
-// ---SERVER---
-const PORT = 5000
+// --- SERVER ---
+const PORT = process.env.PORT || 5000
 const server = http.createServer(app)
 
-// ---SOCKER---
+// --- SOCKET ---
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: false,
+    origin: '*',
+    methods: ['GET', 'POST'],
   },
-  transports: ['websocket'],
 })
 
+// --- DATA ---
 const ROOMS_FILE = path.join(__dirname, 'rooms.json')
 let rooms = []
 
@@ -71,28 +56,17 @@ const socketUsernameMap = new Map()
 const roomTimers = new Map()
 
 io.on('connection', (socket) => {
-  console.log(`User connected : ${socket.id}`)
+  console.log(`User connected: ${socket.id}`)
 
-  // NEW: Wait for user to register name before sending rooms
   socket.on('register_user', ({ username }) => {
-    console.log(`User ${username} registered. Sending ${rooms.length} rooms.`)
     socketUsernameMap.set(socket.id, username)
-    // Now the frontend is guaranteed to have its listeners ready
     socket.emit('existing_rooms', rooms)
   })
 
   socket.on('create_room', (newRoom) => {
-    // Guard: Validate duration is under 24 hours (1440 minutes)
-    if (newRoom.duration > 1440) {
+    if (newRoom.duration > 1440 || newRoom.duration < 1) {
       socket.emit('room_creation_error', {
-        message: 'Duration must be under 24 hours (1440 minutes)',
-      })
-      return
-    }
-
-    if (newRoom.duration < 1) {
-      socket.emit('room_creation_error', {
-        message: 'Duration must be at least 1 minute',
+        message: 'Duration must be between 1 and 1440 minutes',
       })
       return
     }
@@ -103,6 +77,7 @@ io.on('connection', (socket) => {
       createdAt: Date.now(),
       expiresAt: Date.now() + newRoom.duration * 60 * 1000,
     }
+
     rooms.push(roomWithOwner)
     saveRooms()
     io.emit('room_created', roomWithOwner)
@@ -120,87 +95,91 @@ io.on('connection', (socket) => {
 
   socket.on('join_chatroom', ({ roomId, userId, username }) => {
     const room = rooms.find((r) => r.id === roomId)
-    if (room) {
-      userSocketMap.set(userId, socket.id)
-      if (!userRoomsMap.has(socket.id)) userRoomsMap.set(socket.id, new Set())
-      userRoomsMap.get(socket.id).add(roomId)
-      socketUsernameMap.set(socket.id, username)
+    if (!room) return
 
-      room.membersCount++
-      socket.join(roomId)
-      io.emit('room_updated', room)
-      saveRooms()
+    userSocketMap.set(userId, socket.id)
+    if (!userRoomsMap.has(socket.id)) userRoomsMap.set(socket.id, new Set())
+    userRoomsMap.get(socket.id).add(roomId)
+    socketUsernameMap.set(socket.id, username)
 
-      io.to(roomId).emit('user_joined_room', {
-        userId,
-        username: username || userId.slice(0, 8),
-        roomName: room.roomName,
-        message: `${username || 'User'} joined`,
-      })
-    }
+    room.membersCount++
+    socket.join(roomId)
+    io.emit('room_updated', room)
+    saveRooms()
+
+    io.to(roomId).emit('user_joined_room', {
+      userId,
+      username: username || userId.slice(0, 8),
+      roomName: room.roomName,
+      message: `${username || 'User'} joined`,
+    })
   })
 
   socket.on('leave_chatroom', ({ roomId, userId, username }) => {
     const room = rooms.find((r) => r.id === roomId)
-    if (room && room.membersCount > 0) {
-      room.membersCount--
-      if (userRoomsMap.has(socket.id))
-        userRoomsMap.get(socket.id).delete(roomId)
+    if (!room || room.membersCount <= 0) return
 
-      socket.to(roomId).emit('user_left_room', {
-        userId,
-        username: username || userId.slice(0, 8),
-        roomName: room.roomName,
-        message: `${username || 'User'} left`,
-      })
+    room.membersCount--
+    if (userRoomsMap.has(socket.id)) userRoomsMap.get(socket.id).delete(roomId)
 
-      socket.leave(roomId)
-      io.emit('room_updated', room)
-      saveRooms()
-    }
+    socket.to(roomId).emit('user_left_room', {
+      userId,
+      username: username || userId.slice(0, 8),
+      roomName: room.roomName,
+      message: `${username || 'User'} left`,
+    })
+
+    socket.leave(roomId)
+    io.emit('room_updated', room)
+    saveRooms()
   })
 
   socket.on('delete_room', ({ roomId }) => {
     const room = rooms.find((r) => r.id === roomId)
-    if (room && room.ownerId === socket.id) {
-      if (roomTimers.has(roomId)) {
-        clearTimeout(roomTimers.get(roomId))
-        roomTimers.delete(roomId)
-      }
-      io.to(roomId).emit('room_deleted', {
-        roomId,
-        roomName: room.roomName,
-        reason: 'Owner deleted room',
-      })
-      rooms = rooms.filter((r) => r.id !== roomId)
-      io.emit('rooms_updated', rooms)
-      saveRooms()
-      io.in(roomId).socketsLeave(roomId)
+    if (!room || room.ownerId !== socket.id) return
+
+    if (roomTimers.has(roomId)) {
+      clearTimeout(roomTimers.get(roomId))
+      roomTimers.delete(roomId)
     }
+
+    io.to(roomId).emit('room_deleted', {
+      roomId,
+      roomName: room.roomName,
+      reason: 'Owner deleted room',
+    })
+
+    rooms = rooms.filter((r) => r.id !== roomId)
+    io.emit('rooms_updated', rooms)
+    saveRooms()
+    io.in(roomId).socketsLeave(roomId)
   })
 
   function handleRoomExpiry(roomId) {
     const room = rooms.find((r) => r.id === roomId)
-    if (room) {
-      io.to(roomId).emit('room_expired', {
-        roomId,
-        roomName: room.roomName,
-        message: 'Time is up!',
-      })
-      rooms = rooms.filter((r) => r.id !== roomId)
-      io.emit('rooms_updated', rooms)
-      saveRooms()
-      io.in(roomId).socketsLeave(roomId)
-      roomTimers.delete(roomId)
-    }
+    if (!room) return
+
+    io.to(roomId).emit('room_expired', {
+      roomId,
+      roomName: room.roomName,
+      message: 'Time is up!',
+    })
+
+    rooms = rooms.filter((r) => r.id !== roomId)
+    io.emit('rooms_updated', rooms)
+    saveRooms()
+    io.in(roomId).socketsLeave(roomId)
+    roomTimers.delete(roomId)
   }
 
   function startRoomCountdown(roomId) {
     const interval = setInterval(() => {
       const room = rooms.find((r) => r.id === roomId)
       if (!room) return clearInterval(interval)
+
       const timeRemaining = room.expiresAt - Date.now()
       if (timeRemaining <= 0) return clearInterval(interval)
+
       io.to(roomId).emit('timer_update', {
         roomId: room.id,
         timeRemaining: Math.max(0, Math.floor(timeRemaining / 1000)),
@@ -215,23 +194,23 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const joinedRooms = userRoomsMap.get(socket.id) || new Set()
     const disconnectedUsername = socketUsernameMap.get(socket.id) || 'User'
-    const ownedRooms = rooms.filter((room) => room.ownerId === socket.id)
 
-    if (ownedRooms.length > 0) {
-      ownedRooms.forEach((room) => {
-        if (roomTimers.has(room.id)) {
-          clearTimeout(roomTimers.get(room.id))
-          roomTimers.delete(room.id)
-        }
-        io.to(room.id).emit('room_deleted', {
-          roomId: room.id,
-          roomName: room.roomName,
-          reason: 'Owner left',
-        })
+    const ownedRooms = rooms.filter((room) => room.ownerId === socket.id)
+    ownedRooms.forEach((room) => {
+      if (roomTimers.has(room.id)) {
+        clearTimeout(roomTimers.get(room.id))
+        roomTimers.delete(room.id)
+      }
+
+      io.to(room.id).emit('room_deleted', {
+        roomId: room.id,
+        roomName: room.roomName,
+        reason: 'Owner left',
       })
-      rooms = rooms.filter((room) => room.ownerId !== socket.id)
-      io.emit('rooms_updated', rooms)
-    }
+    })
+
+    rooms = rooms.filter((room) => room.ownerId !== socket.id)
+    io.emit('rooms_updated', rooms)
 
     joinedRooms.forEach((roomId) => {
       const room = rooms.find((r) => r.id === roomId)
@@ -252,4 +231,6 @@ io.on('connection', (socket) => {
   })
 })
 
-server.listen(PORT, () => console.log(`Server started at PORT ${PORT}`))
+server.listen(PORT, () => {
+  console.log(`Server started at PORT ${PORT}`)
+})
