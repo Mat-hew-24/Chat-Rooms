@@ -6,17 +6,35 @@ const cors = require('cors')
 const fs = require('fs')
 const path = require('path')
 
-app.use(cors())
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://chat-rooms-gilt.vercel.app',
+  'https://chat-rooms-git-main-mat-hew-24s-projects.vercel.app',
+  'https://chat-rooms-oizde52bl-mat-hew-24s-projects.vercel.app',
+]
 
+//  ---CORS---
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: false,
+  }),
+)
+app.options('*', cors())
+
+// ---SERVER---
 const PORT = 5000
 const server = http.createServer(app)
 
+// ---SOCKER---
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:3000', 'https://localhost:3000', '*'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
+    credentials: false,
   },
+  transports: ['websocket'],
 })
 
 const ROOMS_FILE = path.join(__dirname, 'rooms.json')
@@ -89,9 +107,12 @@ io.on('connection', (socket) => {
     saveRooms()
     io.emit('room_created', roomWithOwner)
 
-    const timerId = setTimeout(() => {
-      handleRoomExpiry(roomWithOwner.id)
-    }, newRoom.duration * 60 * 1000)
+    const timerId = setTimeout(
+      () => {
+        handleRoomExpiry(roomWithOwner.id)
+      },
+      newRoom.duration * 60 * 1000,
+    )
 
     roomTimers.set(roomWithOwner.id, timerId)
     startRoomCountdown(roomWithOwner.id)
