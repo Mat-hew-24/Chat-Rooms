@@ -12,13 +12,17 @@ function LeftMessage({
   username: string
 }) {
   return (
-    <div className='flex justify-start mb-4'>
-      <div className='bg-gray-300 text-black px-4 py-2 rounded-lg max-w-xs wrap-break-word'>
-        {/*wrap-break-word */}
-        <span className='text-xs text-gray-700 mb-1 font-semibold block'>
+    <div className='flex items-end gap-2 mb-4 animate-[msgInLeft_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]'>
+      <div className='w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-amber-200 text-amber-900 border border-amber-300'>
+        {username[0].toUpperCase()}
+      </div>
+      <div className='flex flex-col gap-1 max-w-xs'>
+        <span className='text-[10px] font-semibold uppercase tracking-wider pl-1 text-amber-800/60'>
           {username}
         </span>
-        <span className='wrap-break-word'>{message}</span>
+        <div className='px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm leading-relaxed break-words bg-white/70 text-gray-900 border border-amber-200 shadow-sm'>
+          {message}
+        </div>
       </div>
     </div>
   )
@@ -32,12 +36,17 @@ function RightMessage({
   username: string
 }) {
   return (
-    <div className='flex justify-end mb-4'>
-      <div className='bg-blue-500 text-white px-4 py-2 rounded-lg max-w-xs wrap-break-word'>
-        <span className='text-xs text-blue-100 mb-1 font-semibold block'>
+    <div className='flex items-end gap-2 mb-4 flex-row-reverse animate-[msgInRight_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]'>
+      <div className='w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-gray-900 text-amber-100'>
+        {username[0].toUpperCase()}
+      </div>
+      <div className='flex flex-col gap-1 max-w-xs items-end'>
+        <span className='text-[10px] font-semibold uppercase tracking-wider pr-1 text-amber-800/60'>
           {username}
         </span>
-        <span className='wrap-break-word'>{message}</span>
+        <div className='px-4 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed break-words bg-gray-900 text-amber-50 shadow-md'>
+          {message}
+        </div>
       </div>
     </div>
   )
@@ -54,5 +63,3 @@ export default function Chatmessage({ who, message, username }: MessageProp) {
     </>
   )
 }
-
-//OKIEEE

@@ -1,9 +1,6 @@
 'use client'
-import Chatroombox from './components/Chatroombox'
-import Messagebar from './components/Messagebar'
-import Chatroom from './components/Chatroom'
-import Createroom from './components/Createroom'
-import UsernameModal from './components/UsernameModal'
+import InRoomView from './components/InRoomView'
+import OutOfRoomView from './components/OutOfRoomView'
 import { v4 as uuidv4 } from 'uuid'
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useSocket } from './components/SocketContext'
@@ -35,7 +32,7 @@ export default function Home() {
   const [enteredUsername, setEnteredUsername] = useState<string>('')
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
   const messageSentCallbackRef = useRef<((message: string) => void) | null>(
-    null
+    null,
   )
 
   const handleMessageSent = useCallback((message: string) => {
@@ -48,7 +45,7 @@ export default function Home() {
     (callback: (message: string) => void) => {
       messageSentCallbackRef.current = callback
     },
-    []
+    [],
   )
 
   useEffect(() => {
@@ -102,7 +99,7 @@ export default function Home() {
         showErrorToast(`${data.message}`)
       }
       setRooms((prevRooms) =>
-        prevRooms.filter((room) => room.id !== data.roomId)
+        prevRooms.filter((room) => room.id !== data.roomId),
       )
     })
 
@@ -127,8 +124,8 @@ export default function Home() {
     socket.on('room_updated', (updatedRoom: Room) => {
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
-          room.id === updatedRoom.id ? updatedRoom : room
-        )
+          room.id === updatedRoom.id ? updatedRoom : room,
+        ),
       )
     })
 
@@ -147,7 +144,7 @@ export default function Home() {
         showErrorToast(`Room "${data.roomName}" was deleted: ${data.reason}`)
       }
       setRooms((prevRooms) =>
-        prevRooms.filter((room) => room.id !== data.roomId)
+        prevRooms.filter((room) => room.id !== data.roomId),
       )
     })
 
@@ -203,7 +200,7 @@ export default function Home() {
     if (room && room.expiresAt) {
       const remaining = Math.max(
         0,
-        Math.floor((room.expiresAt - Date.now()) / 1000)
+        Math.floor((room.expiresAt - Date.now()) / 1000),
       )
       setTimeRemaining(remaining)
     }
@@ -236,109 +233,32 @@ export default function Home() {
 
   if (inRoom) {
     const currentRoom = rooms.find((room) => room.id === currentRoomId)
-    const formatTime = (totalSeconds: number): string => {
-      const hours = Math.floor(totalSeconds / 3600)
-      const minutes = Math.floor((totalSeconds % 3600) / 60)
-      const seconds = totalSeconds % 60
-      if (hours > 0) {
-        return `${hours.toString().padStart(2, '0')}:${minutes
-          .toString()
-          .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-      }
-      return `${minutes.toString().padStart(2, '0')}:${seconds
-        .toString()
-        .padStart(2, '0')}`
-    }
-
     return (
-      <div className='min-h-screen bg-amber-100 flex flex-col'>
-        <header className='timer-bar'>
-          <div className='w-full max-w-7xl mx-auto flex items-center justify-between'>
-            <div className='flex-1 min-w-0'>
-              <h2 className='text-2xl md:text-3xl font-bold truncate leading-tight'>
-                {currentRoom?.roomName || 'Chat Room'}
-              </h2>
-              <p className='text-[16px] md:text-xl text-gray-400 uppercase tracking-tighter truncate'>
-                {currentRoom?.ownerName}
-              </p>
-            </div>
-
-            <div className='flex-none px-2'>
-              <div
-                className={`text-3xl font-mono font-black tabular-nums tracking-tight ${
-                  timeRemaining <= 60
-                    ? 'text-red-500 animate-pulse'
-                    : 'text-green-400'
-                }`}
-              >
-                {formatTime(timeRemaining)}
-              </div>
-            </div>
-
-            <div className='flex-1 flex justify-end'>
-              <button
-                onClick={handleExitRoom}
-                className='bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black py-1.5 px-4 rounded text-[16px] md:text-xl transition-all uppercase cursor-pointer'
-              >
-                Exit
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <main className='chat-container flex-grow'>
-          <Chatroom
-            idRef={idRef}
-            onMessageFromSender={setMessageSentCallback}
-            username={username}
-          />
-        </main>
-
-        <footer className='fixed-message-bar'>
-          <div className='max-w-7xl mx-auto w-full'>
-            <Messagebar
-              idRef={idRef}
-              onMessageSent={handleMessageSent}
-              inRoom={inRoom}
-              roomId={currentRoomId}
-            />
-          </div>
-        </footer>
-      </div>
+      <InRoomView
+        currentRoom={currentRoom}
+        timeRemaining={timeRemaining}
+        handleExitRoom={handleExitRoom}
+        idRef={idRef}
+        setMessageSentCallback={setMessageSentCallback}
+        username={username}
+        handleMessageSent={handleMessageSent}
+        inRoom={inRoom}
+        currentRoomId={currentRoomId}
+      />
     )
   }
 
   return (
-    <div className='min-h-screen bg-amber-100 py-8 px-4'>
-      {showUsernameModal && (
-        <UsernameModal
-          onSubmit={handleUsernameSubmit}
-          enteredUsername={enteredUsername}
-          setEnteredUsername={setEnteredUsername}
-        />
-      )}
-      <div className='max-w-full pb-5 mx-auto'>
-        <div className='text-center mb-12'>
-          <h1 className='text-4xl font-bold mb-4'>Chat App</h1>
-        </div>
-        <div className='flex justify-center mb-8'>
-          <Createroom onCreateRoom={handleCreateRoom} />
-        </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-          {rooms.map((room) => (
-            <Chatroombox
-              key={room.id}
-              roomName={room.roomName}
-              ownerName={room.ownerName}
-              membersCount={room.membersCount}
-              duration={room.duration}
-              onJoin={() => handleJoinRoom(room.id)}
-              isOwner={socket?.id === room.ownerId}
-              onDelete={() => handleDeleteRoom(room.id)}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <OutOfRoomView
+      showUsernameModal={showUsernameModal}
+      handleUsernameSubmit={handleUsernameSubmit}
+      enteredUsername={enteredUsername}
+      setEnteredUsername={setEnteredUsername}
+      handleCreateRoom={handleCreateRoom}
+      rooms={rooms}
+      handleJoinRoom={handleJoinRoom}
+      socket={socket}
+      handleDeleteRoom={handleDeleteRoom}
+    />
   )
 }
