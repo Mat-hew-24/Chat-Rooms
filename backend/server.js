@@ -3,11 +3,17 @@ const app = express()
 const http = require('http')
 const { Server } = require('socket.io')
 const cors = require('cors')
-const fs = require('fs')
-const path = require('path')
+const Redis = require('ioredis')
+require('dotenv').config()
 
-// --- CORS (simple, project-style) ---
+// --- CORS ---
 app.use(cors())
+
+// --- REDIS ---
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+
+redis.on('connect', () => console.log('Redis connected'))
+redis.on('error', (err) => console.error('Redis error:', err))
 
 // --- SERVER ---
 const PORT = process.env.PORT || 5000
@@ -21,34 +27,32 @@ const io = new Server(server, {
   },
 })
 
+// --- PING ENDPOINT (keeps Render alive) ---
+app.get('/ping', (req, res) => res.send('OK'))
+
 // --- DATA ---
-const ROOMS_FILE = path.join(__dirname, 'rooms.json')
 let rooms = []
 
-function loadRooms() {
+async function loadRooms() {
   try {
-    if (fs.existsSync(ROOMS_FILE)) {
-      const data = fs.readFileSync(ROOMS_FILE, 'utf8')
-      rooms = JSON.parse(data)
-      const now = Date.now()
-      rooms = rooms.filter((room) => !(room.expiresAt && room.expiresAt < now))
-      saveRooms()
-    }
-  } catch (error) {
-    console.log('Error loading rooms:', error.message)
+    const data = await redis.get('rooms')
+    rooms = data ? JSON.parse(data) : []
+    const now = Date.now()
+    rooms = rooms.filter((room) => !(room.expiresAt && room.expiresAt < now))
+    await saveRooms()
+  } catch (err) {
+    console.error('Error loading rooms:', err.message)
     rooms = []
   }
 }
 
-function saveRooms() {
+async function saveRooms() {
   try {
-    fs.writeFileSync(ROOMS_FILE, JSON.stringify(rooms, null, 2))
-  } catch (error) {
-    console.error('Error saving rooms:', error.message)
+    await redis.set('rooms', JSON.stringify(rooms))
+  } catch (err) {
+    console.error('Error saving rooms:', err.message)
   }
 }
-
-loadRooms()
 
 const userSocketMap = new Map()
 const userRoomsMap = new Map()
@@ -231,6 +235,9 @@ io.on('connection', (socket) => {
   })
 })
 
-server.listen(PORT, () => {
-  console.log(`Server started at PORT ${PORT}`)
+// --- START (wait for Redis load first) ---
+loadRooms().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Server started at PORT ${PORT}`)
+  })
 })
