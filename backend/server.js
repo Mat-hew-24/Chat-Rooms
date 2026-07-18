@@ -12,11 +12,23 @@ app.use(cors())
 // --- REDIS ---
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
 
+const sub = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+
+sub.subscribe('chat_messages', (err) => {
+  if (err) console.error('Subscribe error:', err.message)
+})
+
+sub.on('message', (channel, message) => {
+  if (channel !== 'chat_messages') return
+  const data = JSON.parse(message)
+  io.to(data.room).except(data.senderId).emit('recieve_msg', data)
+})
+
 redis.on('connect', () => console.log('Redis connected'))
 redis.on('error', (err) => console.error('Redis error:', err))
 
 // --- SERVER ---
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5001
 const server = http.createServer(app)
 
 // --- SOCKET ---
@@ -192,7 +204,12 @@ io.on('connection', (socket) => {
   }
 
   socket.on('send_msg', (data) => {
-    if (data.room) socket.to(data.room).emit('recieve_msg', data)
+    if (data.room) {
+      redis.publish(
+        'chat_messages',
+        JSON.stringify({ ...data, senderId: socket.id }),
+      )
+    }
   })
 
   socket.on('disconnect', () => {
