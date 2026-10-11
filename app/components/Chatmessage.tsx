@@ -2,25 +2,46 @@ type MessageProp = {
   who: string
   message: string
   username: string
+  time: number
+  isGroupStart: boolean
+}
+
+function formatTime(time: number) {
+  return new Date(time).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 function LeftMessage({
   message,
   username,
+  time,
+  isGroupStart,
 }: {
   message: string
   username: string
+  time: number
+  isGroupStart: boolean
 }) {
   return (
-    <div className='flex items-end gap-2 mb-4 animate-[msgInLeft_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]'>
-      <div className='w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-amber-200 text-amber-900 border border-amber-300'>
-        {username[0].toUpperCase()}
+    <div
+      className={`flex items-end gap-2 ${isGroupStart ? 'mt-3' : 'mt-0.5'} animate-[msgIn_0.18s_ease-out_both]`}
+    >
+      <div className='w-7 shrink-0'>
+        {isGroupStart && (
+          <span className='flex h-7 w-7 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink'>
+            {username[0]?.toUpperCase()}
+          </span>
+        )}
       </div>
-      <div className='flex flex-col gap-1 max-w-xs'>
-        <span className='text-[10px] font-semibold uppercase tracking-wider pl-1 text-amber-800/60'>
-          {username}
-        </span>
-        <div className='px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm leading-relaxed break-words bg-white/70 text-gray-900 border border-amber-200 shadow-sm'>
+      <div className='flex max-w-[75%] flex-col gap-1 md:max-w-md'>
+        {isGroupStart && (
+          <span className='pl-1 text-xs text-ink-muted'>
+            {username} &middot; {formatTime(time)}
+          </span>
+        )}
+        <div className='break-words rounded-2xl rounded-bl-md border border-border bg-surface px-3.5 py-2 text-sm leading-relaxed text-ink'>
           {message}
         </div>
       </div>
@@ -30,21 +51,25 @@ function LeftMessage({
 
 function RightMessage({
   message,
-  username,
+  time,
+  isGroupStart,
 }: {
   message: string
-  username: string
+  time: number
+  isGroupStart: boolean
 }) {
   return (
-    <div className='flex items-end gap-2 mb-4 flex-row-reverse animate-[msgInRight_0.25s_cubic-bezier(0.34,1.56,0.64,1)_both]'>
-      <div className='w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-gray-900 text-amber-100'>
-        {username[0].toUpperCase()}
-      </div>
-      <div className='flex flex-col gap-1 max-w-xs items-end'>
-        <span className='text-[10px] font-semibold uppercase tracking-wider pr-1 text-amber-800/60'>
-          {username}
-        </span>
-        <div className='px-4 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed break-words bg-gray-900 text-amber-50 shadow-md'>
+    <div
+      className={`flex flex-row-reverse items-end gap-2 ${isGroupStart ? 'mt-3' : 'mt-0.5'} animate-[msgIn_0.18s_ease-out_both]`}
+    >
+      <div className='w-7 shrink-0' />
+      <div className='flex max-w-[75%] flex-col items-end gap-1 md:max-w-md'>
+        {isGroupStart && (
+          <span className='pr-1 text-xs text-ink-muted'>
+            {formatTime(time)}
+          </span>
+        )}
+        <div className='break-words rounded-2xl rounded-br-md bg-accent px-3.5 py-2 text-sm leading-relaxed text-white'>
           {message}
         </div>
       </div>
@@ -52,14 +77,21 @@ function RightMessage({
   )
 }
 
-export default function Chatmessage({ who, message, username }: MessageProp) {
-  return (
-    <>
-      {who === 'user' ? (
-        <RightMessage message={message} username={username} />
-      ) : (
-        <LeftMessage message={message} username={username} />
-      )}
-    </>
+export default function Chatmessage({
+  who,
+  message,
+  username,
+  time,
+  isGroupStart,
+}: MessageProp) {
+  return who === 'user' ? (
+    <RightMessage message={message} time={time} isGroupStart={isGroupStart} />
+  ) : (
+    <LeftMessage
+      message={message}
+      username={username}
+      time={time}
+      isGroupStart={isGroupStart}
+    />
   )
 }

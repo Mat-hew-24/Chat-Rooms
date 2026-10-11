@@ -1,6 +1,8 @@
 'use client'
-import InRoomView from './components/InRoomView'
-import OutOfRoomView from './components/OutOfRoomView'
+import Sidebar from './components/Sidebar'
+import ConversationPanel from './components/ConversationPanel'
+import EmptyState from './components/EmptyState'
+import UsernameModal from './components/UsernameModal'
 import { v4 as uuidv4 } from 'uuid'
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useSocket } from './components/SocketContext'
@@ -23,7 +25,7 @@ interface Room {
 }
 
 export default function Home() {
-  const { socket, username, setUsername } = useSocket()
+  const { socket, username, setUsername, isConnected } = useSocket()
   const idRef = useRef<string>(uuidv4())
   const [inRoom, setInRoom] = useState<boolean>(false)
   const [currentRoomId, setCurrentRoomId] = useState<string>('')
@@ -231,34 +233,45 @@ export default function Home() {
     if (socket) socket.emit('delete_room', { roomId })
   }
 
-  if (inRoom) {
-    const currentRoom = rooms.find((room) => room.id === currentRoomId)
-    return (
-      <InRoomView
-        currentRoom={currentRoom}
-        timeRemaining={timeRemaining}
-        handleExitRoom={handleExitRoom}
-        idRef={idRef}
-        setMessageSentCallback={setMessageSentCallback}
-        username={username}
-        handleMessageSent={handleMessageSent}
-        inRoom={inRoom}
-        currentRoomId={currentRoomId}
-      />
-    )
-  }
+  const currentRoom = rooms.find((room) => room.id === currentRoomId)
 
   return (
-    <OutOfRoomView
-      showUsernameModal={showUsernameModal}
-      handleUsernameSubmit={handleUsernameSubmit}
-      enteredUsername={enteredUsername}
-      setEnteredUsername={setEnteredUsername}
-      handleCreateRoom={handleCreateRoom}
-      rooms={rooms}
-      handleJoinRoom={handleJoinRoom}
-      socket={socket}
-      handleDeleteRoom={handleDeleteRoom}
-    />
+    <div className='flex h-dvh w-full overflow-hidden bg-bg text-ink'>
+      {showUsernameModal && (
+        <UsernameModal
+          onSubmit={handleUsernameSubmit}
+          enteredUsername={enteredUsername}
+          setEnteredUsername={setEnteredUsername}
+        />
+      )}
+
+      <Sidebar
+        rooms={rooms}
+        currentRoomId={currentRoomId}
+        inRoom={inRoom}
+        username={username}
+        isConnected={isConnected}
+        socketId={socket?.id}
+        onJoinRoom={handleJoinRoom}
+        onCreateRoom={handleCreateRoom}
+        onDeleteRoom={handleDeleteRoom}
+      />
+
+      {inRoom ? (
+        <ConversationPanel
+          currentRoom={currentRoom}
+          timeRemaining={timeRemaining}
+          handleExitRoom={handleExitRoom}
+          idRef={idRef}
+          setMessageSentCallback={setMessageSentCallback}
+          username={username}
+          handleMessageSent={handleMessageSent}
+          inRoom={inRoom}
+          currentRoomId={currentRoomId}
+        />
+      ) : (
+        <EmptyState />
+      )}
+    </div>
   )
 }

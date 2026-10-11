@@ -13,12 +13,11 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setError('') // Clear previous errors
+    setError('')
 
     if (roomName.trim() && duration) {
       const durationValue = parseInt(duration)
 
-      // Guard: Check if duration is under 24 hours (1440 minutes)
       if (durationValue > 1440) {
         setError('Duration must be under 24 hours (1440 minutes)')
         return
@@ -33,7 +32,6 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
         roomName: roomName.trim(),
         duration: durationValue,
       })
-      // Reset form
       setRoomName('')
       setDuration('')
       setIsOpen(false)
@@ -44,41 +42,53 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className='bg-black hover:bg-black/80 cursor-pointer text-[#ffffcc] font-bold py-3 px-8 rounded-full transition-colors duration-200'
+        aria-label='Create room'
+        title='Create room'
+        className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-ink-soft transition-colors hover:border-accent hover:text-accent cursor-pointer'
       >
-        CREATE ROOM
+        <svg
+          className='h-4 w-4'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth={2}
+          viewBox='0 0 24 24'
+        >
+          <path strokeLinecap='round' d='M12 5v14M5 12h14' />
+        </svg>
       </button>
 
-      {/* this is my form modal*/}
       {isOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
-          <div className='bg-black border-2 border-yellow-100 rounded-2xl p-8 max-w-md w-full'>
-            <h2 className='text-2xl font-bold text-yellow-100 mb-6'>
-              Create New Room
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4'>
+          <div className='w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-xl'>
+            <h2 className='mb-5 text-lg font-semibold text-ink'>
+              Create a room
             </h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
               <div>
-                <label className='block text-yellow-100 mb-2'>Room Name</label>
+                <label className='mb-1.5 block text-sm font-medium text-ink-soft'>
+                  Room name
+                </label>
                 <input
                   type='text'
                   value={roomName}
                   onChange={(e) => setRoomName(e.target.value)}
-                  className='w-full bg-gray-900 text-yellow-100 px-4 py-2 rounded-lg border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100'
-                  placeholder='Enter room name'
+                  className='w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent'
+                  placeholder='e.g. Design review'
                   required
+                  autoFocus
                 />
               </div>
 
               <div>
-                <label className='block text-yellow-100 mb-2'>
-                  Duration (minutes) - Max 24 hours (1440 min)
+                <label className='mb-1.5 block text-sm font-medium text-ink-soft'>
+                  Duration (minutes, max 1440)
                 </label>
                 <input
                   type='number'
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  className='w-full bg-gray-900 text-yellow-100 px-4 py-2 rounded-lg border border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-100'
-                  placeholder='Enter duration (max 1440 minutes)'
+                  className='w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent'
+                  placeholder='60'
                   min='1'
                   max='1440'
                   required
@@ -86,24 +96,24 @@ export default function Createroom({ onCreateRoom }: CreateRoomProps) {
               </div>
 
               {error && (
-                <div className='text-red-400 text-sm mt-2 p-2 bg-red-900/20 rounded-lg border border-red-400'>
+                <div className='rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger'>
                   {error}
                 </div>
               )}
 
-              <div className='flex gap-3 mt-6'>
-                <button
-                  type='submit'
-                  className='flex-1 bg-yellow-100 hover:bg-yellow-500 text-black font-bold py-3 rounded-lg transition-colors duration-200'
-                >
-                  CREATE
-                </button>
+              <div className='flex gap-2 pt-2'>
                 <button
                   type='button'
                   onClick={() => setIsOpen(false)}
-                  className='flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-colors duration-200'
+                  className='flex-1 rounded-lg border border-border py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-surface-hover cursor-pointer'
                 >
-                  CANCEL
+                  Cancel
+                </button>
+                <button
+                  type='submit'
+                  className='flex-1 rounded-lg bg-accent py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover cursor-pointer'
+                >
+                  Create
                 </button>
               </div>
             </form>
