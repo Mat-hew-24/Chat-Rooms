@@ -1,75 +1,99 @@
 @import 'tailwindcss';
 
-@theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  --color-bg: #f6f3ee;
-  --color-surface: #ffffff;
-  --color-surface-hover: #efeae0;
-  --color-border: #e5ded2;
-
-  --color-ink: #2b2723;
-  --color-ink-soft: #6b6459;
-  --color-ink-muted: #a39a8a;
-
-  --color-accent: #b36a1d;
-  --color-accent-hover: #9a5a17;
-  --color-accent-soft: #f1e2c8;
-  --color-accent-ink: #5c3a10;
-
-  --color-danger: #c0392b;
-  --color-danger-soft: #f7e4e1;
-
-  --color-online: #3f9142;
+/* Top Bar */
+.timer-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: #000000;
+  color: white;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-top: 0.5rem; /* add vertical padding */
+  padding-bottom: 0.5rem; /* add vertical padding */
+  border-bottom: 1px solid #222;
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow-x: hidden;
-  background-color: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+/* Bottom Bar - Always Visible */
+.fixed-message-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: #fef3c7; /* Match your bg-amber-100 or make it white/black */
+  padding: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Middle Content */
+.chat-container {
+  /* top padding = timer bar height + vertical padding (0.5rem * 2 = 16px) */
+  padding-top: 80px;
+  /* bottom padding = message bar height (approx 80px-100px) */
+  padding-bottom: 100px;
+  min-height: 100vh;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
 }
 
 .font-mono {
   font-variant-numeric: tabular-nums;
 }
 
-/* Thin, understated scrollbars for message and room lists */
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
-}
-.scrollbar-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
-  border-radius: 9999px;
-  border: 2px solid transparent;
+@media (max-width: 768px) {
+  .timer-bar {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem; /* add vertical padding */
+    padding-bottom: 0.5rem; /* add vertical padding */
+    height: 54px;
+  }
+
+  .chat-container {
+    /* 54px + vertical padding (16px) */
+    padding-top: 70px;
+    padding-bottom: 90px;
+  }
+
+  .fixed-message-bar {
+    padding: 0.5rem;
+  }
 }
 
-/* Consistent, visible keyboard focus everywhere */
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: 4px;
+/* Prevent body bounce/scroll issues on mobile */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
 }
 
-@keyframes msgIn {
+@keyframes msgInLeft {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateX(200px) translateY(16px) scale(0.85);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+@keyframes msgInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-200px) translateY(16px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
   }
 }

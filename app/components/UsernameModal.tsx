@@ -1,4 +1,5 @@
 'use client'
+//ENTRY MODAL ASKING FOR USERNAME
 
 interface UsernameModalProps {
   onSubmit: (username: string) => void
@@ -19,31 +20,33 @@ export default function UsernameModal({
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4'>
-      <div className='w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-xl'>
-        <h2 className='mb-1 text-lg font-semibold text-ink'>
-          Welcome to Chat Rooms
+    <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50'>
+      <div className='bg-black border-4 border-yellow-100 rounded-2xl p-8 max-w-md w-full shadow-2xl'>
+        <h2 className='text-3xl font-bold text-yellow-100 mb-4 text-center'>
+          Welcome to Chat App!
         </h2>
-        <p className='mb-5 text-sm text-ink-soft'>
-          Pick a name to introduce yourself in conversations.
+        <p className='text-yellow-100 text-center mb-6'>
+          Enter your username to get started
         </p>
         <form onSubmit={handleSubmit} className='space-y-4'>
-          <input
-            type='text'
-            value={enteredUsername}
-            onChange={(e) => setEnteredUsername(e.target.value)}
-            className='w-full rounded-lg border border-border bg-bg px-3 py-2.5 text-sm text-ink outline-none focus:border-accent'
-            placeholder='Your name'
-            required
-            autoFocus
-            maxLength={20}
-          />
+          <div>
+            <input
+              type='text'
+              value={enteredUsername}
+              onChange={(e) => setEnteredUsername(e.target.value)}
+              className='w-full bg-gray-900 text-yellow-100 px-4 py-3 rounded-lg border-2 border-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-lg'
+              placeholder='Enter your username'
+              required
+              autoFocus
+              maxLength={20}
+            />
+          </div>
 
           <button
             type='submit'
-            className='w-full rounded-lg bg-accent py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover cursor-pointer'
+            className='w-full bg-yellow-100 hover:bg-yellow-500 text-black font-bold py-3 rounded-lg transition-colors duration-200 text-lg'
           >
-            Continue
+            START CHATTING
           </button>
         </form>
       </div>
